@@ -1,15 +1,3 @@
-"""A tiny keyword retriever over the care-guideline documents (RAG).
-
-Documents live in data/care_guidelines/*.md. Each "## Heading" section is one
-chunk. Species documents (dog.md, cat.md, ...) are only used for pets of that
-species; topic documents (general.md, medication.md) can match any task.
-
-For each task in today's plan (high priority first) the retriever picks the
-single best-matching chunk, so a medication task gets medication notes even on
-a day full of walks. No network or embeddings are needed, so retrieval is fast,
-free, and deterministic.
-"""
-
 from __future__ import annotations
 
 import logging
