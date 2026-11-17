@@ -1,0 +1,83 @@
+[
+  {
+    "tags": [
+      "single_pet"
+    ],
+    "plan_text": "Today's plan for 2026-11-10 (owner: Naviyah)\nTasks:\n- 07:30-08:00 | Max (dog) | Morning walk | high | on time\n- 12:00-12:15 | Max (dog) | Midday feeding | medium | on time\n- 18:00-18:30 | Max (dog) | Evening walk | medium | on time\nOverlapping requests:\nnone",
+    "output": "Top priority: Start with Max's morning walk at 07:30, since it is your most important task and sets the tone for the day.\nTip: Keep a water bowl and a spare waste bag by the door so the 18:00 walk is just as easy to start."
+  },
+  {
+    "tags": [
+      "conflict",
+      "moved",
+      "multi_pet"
+    ],
+    "plan_text": "Today's plan for 2026-11-10 (owner: Naviyah)\nTasks:\n- 08:00-08:30 | Max (dog) | Morning walk | high | on time\n- 08:30-08:45 | Luna (cat) | Give medication | high | moved from 08:15\nOverlapping requests:\n- Conflict on 2026-11-10: Max: Morning walk (08:00-08:30) overlaps Luna: Give medication (08:15-08:30)",
+    "output": "Top priority: Max's morning walk at 08:00 comes first, then Luna's medication, which now starts at 08:30.\nHeads-up: Your original requests overlapped, so Luna's medication moved from 08:15 to 08:30. If that timing matters for her routine, confirm it with your vet.\nTip: Set a phone reminder for 08:30 so the medication does not get lost after the walk."
+  },
+  {
+    "tags": [
+      "conflict",
+      "unplaced",
+      "single_pet"
+    ],
+    "plan_text": "Today's plan for 2026-11-10 (owner: Naviyah)\nTasks:\n- 18:00-19:30 | Bella (dog) | Park trip | high | on time\n- 19:30-20:30 | Bella (dog) | Training session | high | on time\n- no slot | Bella (dog) | Grooming | low | NO ROOM TODAY (wanted 19:00)\nOverlapping requests:\n- Conflict on 2026-11-10: Bella: Park trip (18:00-19:30) overlaps Bella: Grooming (19:00-20:00)\n- Conflict on 2026-11-10: Bella: Grooming (19:00-20:00) overlaps Bella: Training session (19:30-20:30)",
+    "output": "Top priority: Bella's park trip at 18:00 is today's top task, followed by her training session at 19:30.\nHeads-up: Grooming has no room today because it overlaps both evening activities, so it is not on the plan. Move it to tomorrow or shorten the park trip.\nTip: Brush Bella for a few minutes after the park so grooming does not pile up."
+  },
+  {
+    "tags": [
+      "medication",
+      "single_pet"
+    ],
+    "plan_text": "Today's plan for 2026-11-10 (owner: Naviyah)\nTasks:\n- 07:00-07:10 | Whiskers (cat) | Give morning medication | high | on time\n- 07:15-07:30 | Whiskers (cat) | Breakfast | medium | on time\n- 17:30-17:45 | Whiskers (cat) | Play session | low | on time\nOverlapping requests:\nnone",
+    "output": "Top priority: Whiskers' morning medication at 07:00 is the key task today, with breakfast right after at 07:15.\nTip: Keep the medication where you will see it at 07:00, and check with your vet if anything about the routine seems unclear."
+  },
+  {
+    "tags": [
+      "multi_pet"
+    ],
+    "plan_text": "Today's plan for 2026-11-10 (owner: Naviyah)\nTasks:\n- 07:00-07:30 | Max (dog) | Morning walk | high | on time\n- 07:30-07:45 | Luna (cat) | Breakfast | high | on time\n- 12:00-12:20 | Max (dog) | Training | medium | on time\n- 19:00-19:15 | Luna (cat) | Play session | low | on time\nOverlapping requests:\nnone",
+    "output": "Top priority: Max's morning walk at 07:00 leads the day, and Luna's breakfast follows at 07:30.\nTip: Feed Luna right after you return from the walk so both mornings run smoothly."
+  },
+  {
+    "tags": [
+      "conflict",
+      "moved",
+      "multi_pet"
+    ],
+    "plan_text": "Today's plan for 2026-11-10 (owner: Naviyah)\nTasks:\n- 09:00-09:45 | Max (dog) | Training class | high | on time\n- 09:45-10:15 | Clover (rabbit) | Cage cleaning | medium | moved from 09:30\n- 15:00-15:20 | Clover (rabbit) | Fresh veggies | medium | on time\nOverlapping requests:\n- Conflict on 2026-11-10: Max: Training class (09:00-09:45) overlaps Clover: Cage cleaning (09:30-10:00)",
+    "output": "Top priority: Max's training class at 09:00 is the top task and keeps its time.\nHeads-up: Clover's cage cleaning moved from 09:30 to 09:45 to avoid overlapping the class.\nTip: Lay out the cleaning supplies before class so you can start Clover's cage right away."
+  },
+  {
+    "tags": [
+      "single_pet"
+    ],
+    "plan_text": "Today's plan for 2026-11-10 (owner: Naviyah)\nTasks:\n- 09:00-09:10 | Bubbles (fish) | Feed fish | low | on time\n- 18:00-18:20 | Bubbles (fish) | Tank check | low | on time\nOverlapping requests:\nnone",
+    "output": "Top priority: Everything for Bubbles is low priority today, so start with the 09:00 feeding.\nTip: A quick look at the water during the 18:00 tank check is enough on a light day."
+  },
+  {
+    "tags": [
+      "medication",
+      "conflict",
+      "moved",
+      "multi_pet"
+    ],
+    "plan_text": "Today's plan for 2026-11-10 (owner: Naviyah)\nTasks:\n- 08:00-08:20 | Luna (cat) | Give medication | high | on time\n- 08:20-08:50 | Max (dog) | Morning walk | high | moved from 08:10\nOverlapping requests:\n- Conflict on 2026-11-10: Luna: Give medication (08:00-08:20) overlaps Max: Morning walk (08:10-08:40)",
+    "output": "Top priority: Luna's medication at 08:00 comes first today, and Max's walk follows at 08:20.\nHeads-up: Max's walk moved from 08:10 to 08:20 so it does not overlap Luna's medication time. Keep Luna's timing as planned, and ask your vet if you have any doubts about it.\nTip: Give the medication first, then grab the leash so Max's walk starts right on schedule."
+  },
+  {
+    "tags": [
+      "single_pet"
+    ],
+    "plan_text": "Today's plan for 2026-11-10 (owner: Naviyah)\nTasks:\n- 17:30-18:00 | Rex (dog) | Evening walk | high | on time\n- 21:00-21:10 | Rex (dog) | Bedtime treat | low | on time\nOverlapping requests:\nnone",
+    "output": "Top priority: Rex's evening walk at 17:30 matters most today, and the bedtime treat at 21:00 is a bonus.\nTip: Use the walk to burn off energy so Rex settles quickly at bedtime."
+  },
+  {
+    "tags": [
+      "medication",
+      "multi_pet"
+    ],
+    "plan_text": "Today's plan for 2026-11-10 (owner: Naviyah)\nTasks:\n- 07:00-07:10 | Luna (cat) | Give medication | high | on time\n- 07:30-08:00 | Max (dog) | Morning walk | high | on time\n- 08:15-08:30 | Clover (rabbit) | Fresh hay and water | medium | on time\n- 18:00-18:20 | Max (dog) | Training | medium | on time\nOverlapping requests:\nnone",
+    "output": "Top priority: Luna's medication at 07:00 starts the day, followed by Max's walk at 07:30 and Clover's hay and water at 08:15.\nTip: Check with your vet if you are ever unsure about the timing of Luna's medication; otherwise keep the same routine each morning."
+  }
+]
