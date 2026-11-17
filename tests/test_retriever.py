@@ -1,5 +1,3 @@
-"""Tests for the care-note retriever (RAG)."""
-
 import sys
 from pathlib import Path
 
