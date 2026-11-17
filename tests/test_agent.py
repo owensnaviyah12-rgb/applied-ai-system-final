@@ -1,5 +1,3 @@
-"""Tests for the agent workflow. The model is scripted, so no network or key is needed."""
-
 import sys
 from pathlib import Path
 
