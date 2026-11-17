@@ -3,7 +3,8 @@ from datetime import time
 
 import streamlit as st
 
-from coach import explain_plan, todays_conflicts
+from agent import TRACE_FILE, run_agent
+from coach import todays_conflicts
 from pawpal_system import PRIORITIES, Owner, Pet, Scheduler, Task
 
 DATA_FILE = "data.json"
@@ -190,25 +191,34 @@ else:
 # --------------------------------------------------
 
 st.header("🧠 PawPal Coach")
-st.caption("A Gemini assistant specialized for pet-care plans explains today's plan in plain language.")
+st.caption(
+    "A Gemini agent specialized for pet-care plans. It looks up care notes, drafts an "
+    "explanation, checks its own work against safety rules, and logs its reasoning."
+)
 
 if st.button("Explain my plan"):
     with st.spinner("Coach is reading your plan..."):
-        st.session_state.coach_result = explain_plan(
-            owner, plan, todays_conflicts(conflicts)
+        st.session_state.coach_result = run_agent(
+            owner, plan, todays_conflicts(conflicts), trace_path=TRACE_FILE
         )
 
 coach_result = st.session_state.get("coach_result")
 if coach_result:
     st.write(coach_result.text)
     source_label = {
-        "gemini": "Written by Gemini and passed the rule checks.",
+        "gemini": "Written by Gemini and passed every guardrail check.",
         "fallback": "Gemini was unavailable or broke the rules, so this is the built-in explanation.",
         "guardrail": "No model call was needed.",
     }[coach_result.source]
     st.caption(source_label)
+    if coach_result.notes:
+        st.caption("Care notes used: " + ", ".join(sorted({c.source for c in coach_result.notes})))
     if coach_result.problems:
         st.caption("Rule violations caught: " + "; ".join(coach_result.problems))
+    with st.expander("Show the coach's reasoning steps"):
+        for s in coach_result.trace:
+            st.markdown(f"**Step {s.n}: {s.name}** (`{s.tool}`)")
+            st.text(s.detail)
 
 # --------------------------------------------------
 # Next available slot
