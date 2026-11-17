@@ -1,10 +1,20 @@
+import os
 from datetime import time
 
 import streamlit as st
 
+from coach import explain_plan, todays_conflicts
 from pawpal_system import PRIORITIES, Owner, Pet, Scheduler, Task
 
 DATA_FILE = "data.json"
+
+# Let the coach find the Gemini key in .streamlit/secrets.toml if it is not
+# already an environment variable. Never hard-code the key in the repo.
+if not os.environ.get("GEMINI_API_KEY"):
+    try:
+        os.environ["GEMINI_API_KEY"] = st.secrets["GEMINI_API_KEY"]
+    except Exception:  # no secrets file or no key: the coach will fall back safely
+        pass
 PRIORITY_ICON = {"high": "🔴 high", "medium": "🟡 medium", "low": "🟢 low"}
 
 
@@ -174,6 +184,31 @@ if plan:
     )
 else:
     st.info("Nothing to plan for today.")
+
+# --------------------------------------------------
+# PawPal Coach (specialized Gemini explanation)
+# --------------------------------------------------
+
+st.header("🧠 PawPal Coach")
+st.caption("A Gemini assistant specialized for pet-care plans explains today's plan in plain language.")
+
+if st.button("Explain my plan"):
+    with st.spinner("Coach is reading your plan..."):
+        st.session_state.coach_result = explain_plan(
+            owner, plan, todays_conflicts(conflicts)
+        )
+
+coach_result = st.session_state.get("coach_result")
+if coach_result:
+    st.write(coach_result.text)
+    source_label = {
+        "gemini": "Written by Gemini and passed the rule checks.",
+        "fallback": "Gemini was unavailable or broke the rules, so this is the built-in explanation.",
+        "guardrail": "No model call was needed.",
+    }[coach_result.source]
+    st.caption(source_label)
+    if coach_result.problems:
+        st.caption("Rule violations caught: " + "; ".join(coach_result.problems))
 
 # --------------------------------------------------
 # Next available slot
