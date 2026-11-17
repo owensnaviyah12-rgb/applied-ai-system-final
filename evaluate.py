@@ -1,23 +1,3 @@
-"""Test harness for the PawPal Coach.
-
-Part A: guardrail suite (OFFLINE, deterministic, no API key needed)
-    Runs the real agent against a scripted "model" that misbehaves in 12
-    specific ways (dosage language, invented times, invented sources, ...).
-    Each case states what the guardrail SHOULD do and the harness checks it.
-
-Part B: live scenarios (needs GEMINI_API_KEY and google-genai)
-    Runs the full agent with real Gemini on the 8 scenarios from
-    compare_models.py and reports how often Gemini passed the guardrails.
-
-Usage:
-    python evaluate.py                       # Part A, then Part B if a key is set
-    python evaluate.py --offline             # Part A only
-    python evaluate.py --out results/evaluation.md
-    python evaluate.py --traces              # also append Part B traces to ai_interactions.md
-
-Exit code is 1 if any Part A expectation fails, so it can run in CI.
-"""
-
 from __future__ import annotations
 
 import argparse
