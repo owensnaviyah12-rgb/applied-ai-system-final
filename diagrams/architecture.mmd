@@ -1,0 +1,77 @@
+flowchart LR
+    OWNER(["Pet owner"])
+
+    subgraph APP["Streamlit app (app.py)"]
+        direction TB
+        FORMS["Add pets and tasks"]
+        BUTTON["Click: Explain my plan"]
+        SHOW["Show explanation, care notes used, and reasoning steps"]
+    end
+
+    subgraph ENGINE["Scheduling engine (pawpal_system.py)"]
+        direction TB
+        MODEL["Owner, Pet and Task objects"]
+        SCHED["Scheduler: sort, detect conflicts, build daily plan"]
+    end
+
+    subgraph AGENT["PawPal Coach agent (agent.py)"]
+        direction TB
+        INSPECT["1. Inspect plan and choose steps"]
+        RAG["2. Retrieve care notes (retriever.py)"]
+        EXAMPLES["3. Select few-shot examples"]
+        DRAFT["4. Draft explanation with Gemini (specialized prompt)"]
+        CHECK{"5. OUTPUT GUARDRAIL: do all 10 checks pass?"}
+        REVISE["6. Revise once, told which rules were broken"]
+        FALLBACK["7. Built-in rule-based explanation"]
+    end
+
+    subgraph FILES["Data and logs"]
+        direction TB
+        STORE[("data.json: pets and tasks")]
+        DOCS[("data/care_guidelines/*.md")]
+        SHOTS[("data/examples.json")]
+        TRACE[("ai_interactions.md and coach.log")]
+    end
+
+    GEMINI(["Gemini API"])
+
+    subgraph QA["Testing and human review"]
+        direction TB
+        PYTEST["pytest: unit tests with a scripted model"]
+        EVAL["evaluate.py: guardrail suite and live run"]
+        COMPARE["compare_models.py: baseline vs specialized vs RAG"]
+        HUMAN(["Developer reads the reports"])
+    end
+
+    OWNER -->|"enters data"| FORMS
+    FORMS --> MODEL
+    MODEL <--> STORE
+    MODEL --> SCHED
+    SCHED -->|"daily plan and conflicts"| BUTTON
+    OWNER -->|"clicks"| BUTTON
+    BUTTON -->|"run_agent"| INSPECT
+
+    INSPECT -->|"empty plan: no model call"| SHOW
+    INSPECT --> RAG
+    DOCS -.->|"read"| RAG
+    RAG --> EXAMPLES
+    SHOTS -.->|"read"| EXAMPLES
+    EXAMPLES --> DRAFT
+    DRAFT <-->|"prompt and reply"| GEMINI
+    DRAFT --> CHECK
+
+    CHECK -->|"pass"| SHOW
+    CHECK -->|"fail, first time"| REVISE
+    REVISE -->|"check again"| CHECK
+    CHECK -->|"still failing or Gemini error"| FALLBACK
+    FALLBACK --> SHOW
+    CHECK -.->|"records every step"| TRACE
+
+    SHOW -->|"owner reads the answer"| OWNER
+
+    PYTEST -.->|"tests"| CHECK
+    EVAL -.->|"tests"| CHECK
+    COMPARE -.->|"measures"| DRAFT
+    PYTEST --> HUMAN
+    EVAL --> HUMAN
+    COMPARE --> HUMAN
