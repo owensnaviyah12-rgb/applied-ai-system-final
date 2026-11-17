@@ -4,7 +4,6 @@ Usage:
     python compare_models.py --out results/comparison.md
     python compare_models.py --dry-run   # offline wiring check with a STUB model
 
-
 from __future__ import annotations
 
 import argparse
@@ -13,26 +12,21 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from coach import (
+    CHECK_NAMES,
     CoachError,
-    PlanFeatures,
     baseline_explain,
-    check_output,
     compute_features,
+    evaluate_checks,
     gemini_llm,
     plan_to_text,
     specialized_explain,
     todays_conflicts,
 )
 from pawpal_system import Owner, Pet, Scheduler, Task
+from retriever import format_notes, retrieve
 
-CHECK_NAMES = [
-    "length",
-    "opener",
-    "tip",
-    "heads-up",
-    "no medical advice",
-    "names top pet",
-]
+VERSIONS = ["baseline", "specialized", "specialized+RAG"]
+SAMPLE_SCENARIO = "Medication moved by a walk"
 
 
 # ----------------------------------------------------------------------
@@ -64,7 +58,7 @@ def scenarios() -> list[tuple[str, Owner]]:
         ("Overlapping walks", _owner(
             ("Daisy", "dog", [("Morning walk", "08:00", 45, "high")]),
             ("Scout", "dog", [("Training", "08:30", 30, "medium")]))),
-        ("Medication moved by a walk", _owner(
+        (SAMPLE_SCENARIO, _owner(
             ("Oscar", "cat", [("Give medication", "08:15", 10, "high")]),
             ("Daisy", "dog", [("Morning walk", "08:00", 30, "high")]))),
         ("Task with no room today", _owner(
@@ -89,19 +83,6 @@ def scenarios() -> list[tuple[str, Owner]]:
 # Scoring
 # ----------------------------------------------------------------------
 
-def run_checks(text: str, features: PlanFeatures) -> dict[str, bool]:
-    """Return {check name: passed} using the same rules as the app's guardrail."""
-    problems = " | ".join(check_output(text, features.top_pet, features.needs_heads_up))
-    return {
-        "length": "too long" not in problems,
-        "opener": "does not start" not in problems,
-        "tip": "missing 'Tip:'" not in problems,
-        "heads-up": "Heads-up" not in problems,
-        "no medical advice": "diagnosis or dosage" not in problems,
-        "names top pet": "top-priority pet" not in problems,
-    }
-
-
 @dataclass
 class Row:
     scenario: str
@@ -112,8 +93,8 @@ class Row:
     text: str
 
 
-def evaluate(llm, label_prefix: str = "") -> list[Row]:
-    """Run baseline and specialized on every scenario and score the replies."""
+def evaluate(llm) -> list[Row]:
+    """Run all three versions on every scenario and score the replies."""
     rows: list[Row] = []
     for name, owner in scenarios():
         scheduler = Scheduler(owner)
@@ -121,26 +102,31 @@ def evaluate(llm, label_prefix: str = "") -> list[Row]:
         conflicts = todays_conflicts(scheduler.detect_conflicts())
         features = compute_features(plan, conflicts)
         plan_text = plan_to_text(owner, plan, conflicts)
+        notes = retrieve(owner, plan)
+        sources = [c.source for c in notes]
 
-        for version, call in (
-            ("baseline", lambda: baseline_explain(plan_text, llm)),
-            ("specialized", lambda: specialized_explain(plan_text, features, llm)),
-        ):
+        calls = {
+            # version: (function that gets the reply, sources the checks should expect)
+            "baseline": (lambda: baseline_explain(plan_text, llm), []),
+            "specialized": (
+                lambda: specialized_explain(plan_text, features, llm), []),
+            "specialized+RAG": (
+                lambda: specialized_explain(
+                    plan_text, features, llm, notes_text=format_notes(notes)),
+                sources),
+        }
+        for version in VERSIONS:
+            call, expected_sources = calls[version]
             try:
                 text = call()
             except CoachError as error:
                 text = f"[error: {error}]"
-                results = {check: False for check in CHECK_NAMES}
+                failed = list(CHECK_NAMES)
             else:
-                results = run_checks(text, features)
-            rows.append(Row(
-                scenario=name,
-                version=version,
-                words=len(text.split()),
-                passed=sum(results.values()),
-                failed_checks=[c for c, ok in results.items() if not ok],
-                text=text,
-            ))
+                results = evaluate_checks(text, features, plan_text, expected_sources)
+                failed = [check for check, problem in results.items() if problem]
+            rows.append(Row(name, version, len(text.split()),
+                            len(CHECK_NAMES) - len(failed), failed, text))
     return rows
 
 
@@ -149,7 +135,7 @@ def render_markdown(rows: list[Row], dry_run: bool) -> str:
     out = []
     if dry_run:
         out.append("> DRY RUN: stub model, NOT real Gemini output. Do not use these numbers.\n")
-    out.append("## Baseline vs specialized (per scenario)\n")
+    out.append("## Baseline vs specialized vs specialized+RAG (per scenario)\n")
     out.append("| Scenario | Version | Words | Checks passed | Failed checks |")
     out.append("|---|---|---|---|---|")
     for r in rows:
@@ -159,7 +145,7 @@ def render_markdown(rows: list[Row], dry_run: bool) -> str:
     out.append("\n## Summary\n")
     out.append("| Version | Avg words | Checks passed | Scenarios passing all checks |")
     out.append("|---|---|---|---|")
-    for version in ("baseline", "specialized"):
+    for version in VERSIONS:
         mine = [r for r in rows if r.version == version]
         total = len(mine) * len(CHECK_NAMES)
         passed = sum(r.passed for r in mine)
@@ -170,11 +156,10 @@ def render_markdown(rows: list[Row], dry_run: bool) -> str:
 
 
 def render_samples(rows: list[Row]) -> str:
-    """Show one scenario's baseline and specialized replies side by side."""
-    pick = "Medication moved by a walk"
-    lines = [f"\n## Sample replies: {pick}\n"]
+    """Show one scenario's three replies together (the before/after example)."""
+    lines = [f"\n## Before/after sample: {SAMPLE_SCENARIO}\n"]
     for r in rows:
-        if r.scenario == pick:
+        if r.scenario == SAMPLE_SCENARIO:
             lines.append(f"**{r.version}**\n\n```text\n{r.text}\n```\n")
     return "\n".join(lines)
 
@@ -184,9 +169,10 @@ def render_samples(rows: list[Row]) -> str:
 # ----------------------------------------------------------------------
 
 def stub_llm(system: str, user: str) -> str:
-    """Fake model for --dry-run: verbose when 'helpful assistant', tidy otherwise."""
+    """Fake model for --dry-run: chatty for the baseline, terse for the coach."""
     if "PawPal Coach" in system:
-        return "Top priority: Daisy, Milo, Oscar, Scout and the rest are covered.\nTip: Start with the first task."
+        tip = " [dog.md]" if "CARE NOTES:\n- [" in user else ""
+        return f"Top priority: Daisy, Milo, Oscar, Scout and the rest are covered.\nTip: Start with the first task.{tip}"
     return "# Your schedule\n\nHere is a long, friendly breakdown of everything. " * 12
 
 
@@ -202,7 +188,7 @@ def main(argv: list[str] | None = None) -> int:
 
     llm = stub_llm if args.dry_run else gemini_llm
     if not args.dry_run:
-        try:  # fail early with a clear message instead of 16 error rows
+        try:  # fail early with a clear message instead of 24 error rows
             gemini_llm("You are a test.", "Say OK.")
         except CoachError as error:
             print(f"Cannot reach Gemini: {error}", file=sys.stderr)
