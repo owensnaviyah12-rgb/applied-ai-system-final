@@ -101,3 +101,60 @@ Task: get my PawPal+ project to a state that matches the rubric.
 **Which approach did you use in your final implementation and why?**
 
 I combined them: the final prompt ("make sure all the files match for rubric ... extra point should be included") attached all my actual files and the full rubric, which is Option A's strength, and asked for the complete result, which fixed Option B's gap. It produced the most complete and verifiable outcome: every file checked against the rubric, tests that run, and real output pasted into the README. The lesson for future prompts is to include the requirements and the real files, and to say exactly which deliverables are wanted.
+
+
+## PawPal Coach agent reasoning traces
+
+Each run below is one pass of the PawPal Coach agent: what it inspected, which care notes it retrieved, what Gemini drafted, and which guardrail checks passed or failed.
+
+### Run 2026-11-19 01:57:37 (answer source: guardrail, model calls: 0)
+
+**Reasoning trace**
+
+```text
+Step 1: short_circuit  [guardrail]
+    The plan is empty, so no model call is made.
+```
+
+**Final answer**
+
+```text
+You have nothing planned for today. Add a task above and I'll walk you through the plan.
+```
+
+### Run 2026-11-19 01:58:41 (answer source: fallback, model calls: 1)
+
+**Input plan**
+
+```text
+Today's plan for 2026-11-19 (owner: Naviyah)
+Tasks:
+- 08:00-08:40 | Sally (Rockweiler) | Take on a walk | high | on time
+Overlapping requests:
+none
+```
+
+**Reasoning trace**
+
+```text
+Step 1: inspect_plan  [compute_features]
+    1 tasks, 1 pet(s); conflicts=False, moved=False, no_room=False, medication=False; top priority: Sally - Take on a walk
+Step 2: make_plan  [planner]
+    retrieve care notes -> draft -> self-check -> revise up to 1x if a rule is broken -> fall back if still failing
+Step 3: retrieve_care_notes  [retriever]
+    no relevant notes found; Tip will be general
+Step 4: select_examples  [select_examples]
+    3 examples; tags: single_pet | conflict,unplaced,single_pet | medication,single_pet
+Step 5: draft  [gemini]
+    FAILED: Gemini request failed: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use models/gemini-3.8-flash for the latest features and improvements. We recommend you to use the Interactions API (https://aistudio.google.com/docs/get-started).', 'status': 'NOT_FOUND'}}
+Step 6: fallback  [fallback_explanation]
+    Model unavailable or kept breaking the rules; using the built-in explanation.
+```
+
+**Final answer**
+
+```text
+Top priority: Sally's take on a walk at 08:00 is the most important task today.
+Tip: Do the highest-priority task first so the rest of the day stays flexible.
+```
+
