@@ -3,3 +3,7 @@ __pycache__/
 .pytest_cache/
 data.json
 demo_data.json
+.streamlit/secrets.toml
+coach.log
+.streamlit/secrets.toml
+coach.log

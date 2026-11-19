@@ -1,8 +1,23 @@
+"""Compare three versions of the coach on the same plans.
+
+    baseline          generic prompt, no rules, no examples
+    specialized       rules + few-shot examples (no care notes)
+    specialized+RAG   rules + few-shot examples + retrieved care notes
+
+All three get the SAME plan text for each scenario. Each reply is scored with
+the same ten guardrail checks (coach.evaluate_checks), so differences are
+measurable rather than a matter of opinion. The report also prints one scenario
+side by side, which is the before/after example for the RAG stretch feature.
+
 Usage:
-    export GEMINI_API_KEY=...            # your key
+    export GEMINI_API_KEY=your-key
     python compare_models.py             # real Gemini calls
     python compare_models.py --out results/comparison.md
     python compare_models.py --dry-run   # offline wiring check with a STUB model
+
+--dry-run does not call any model. Its numbers are not real results and must
+never be pasted into model_card.md.
+"""
 
 from __future__ import annotations
 

@@ -1,3 +1,21 @@
+"""End-to-end demo of the PawPal Coach (no Streamlit needed).
+
+For three example days it runs the whole system:
+    pets and tasks -> Scheduler plan -> agent (retrieve notes, draft with
+    Gemini, guardrail checks, revise or fall back) -> final answer
+
+and prints the input, the retrieved care notes, the answer, and the
+guardrail results, so the output can be pasted straight into the README.
+
+Usage:
+    export GEMINI_API_KEY=your-key
+    python demo.py              # run the three scenarios
+    python demo.py --traces     # also append each run to ai_interactions.md
+
+Without a key the coach still works: it uses its built-in fallback and the
+output says so ("SOURCE: fallback").
+"""
+
 from __future__ import annotations
 
 import argparse
